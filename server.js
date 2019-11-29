@@ -3,24 +3,66 @@ var bodyParser = require('body-parser');
 var app        = express();
 var morgan     = require('morgan');
 var routes     = require('./routes');
+var bodyParser = require('body-parser');
 // var oAuth     = require('./o-auth');
 // var googleAuth     = require('./google-auth');
 var {google} = require('googleapis');
 var config = require('./config');
+var fs = require('fs');
 var OAuth2 = google.auth.OAuth2;
 
+var data = require('./data.json');
 
 // configure app
 app.use(morgan('dev')); // log requests to the console
+// app.use(bodyParser)
 
 // configure body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+app.use(function (req, res, next) {
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', '*')
+
+  // Request methods you wish to allow
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, OPTIONS, PUT, PATCH, DELETE'
+  )
+
+  // Request headers you wish to allow
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  // res.setHeader('Access-Control-Allow-Credentials', true)
+
+  // Pass to next layer of middleware
+  next()
+})
+
+
 var port     = process.env.PORT || 8080; // set our port
 
 app.get('/*', function (req, res) {
-    res.send('Hello World!');
+    var new_data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))
+
+    var data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))
+    data.events = []
+    fs.writeFileSync('data.json', JSON.stringify(data, null, 1))
+    
+    var events = new_data.events
+    res.status(200).json({ events })
+});
+
+app.post('/events/new', function(req, res) {
+    console.log("New Domotz IFTTT event received ")
+    console.log(req.body)
+    var data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))
+    data.events.push(req.body)
+    fs.writeFileSync('data.json', JSON.stringify(data, null, 1 ))
+    res.status(200)
 });
 
 var oauth2Client = new OAuth2(
