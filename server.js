@@ -57,7 +57,7 @@ app.get('/events/updates', function (req, res) {
 });
 
 app.post('/events/new', function(req, res) {
-    console.log("New Domotz IFTTT event received ")
+    console.log("New Domotz WEBHOOK event received ")
     console.log(req.body)
     var data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))
     data.events.push(req.body)
