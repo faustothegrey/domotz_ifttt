@@ -43,9 +43,9 @@ app.use(function (req, res, next) {
 })
 
 
-var port     = process.env.PORT || 8080; // set our port
+var port     = process.env.PORT || 5555; // set our port
 
-app.get('/*', function (req, res) {
+app.get('/events/updates', function (req, res) {
     var new_data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))
 
     var data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))

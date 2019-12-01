@@ -10,5 +10,6 @@ router.use(function(req, res, next) {
 
 router.use('/say-hello', require('./say-hello'));
 router.use('/create_new_thing', require('./create_new_thing'));
+router.use('/new_domotz_event_dispatched', require('./new_domotz_event_dispatched'))
 
 module.exports = router;

@@ -10,5 +10,6 @@ router.use(function(req, res, next) {
 
 router.use('/my_trigger', require('./my-trigger'));
 router.use('/new_thing_created', require('./new_thing_created'));
+router.use('/new_domotz_event', require('./new_domotz_event'))
 
 module.exports = router;
