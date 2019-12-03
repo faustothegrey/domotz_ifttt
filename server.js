@@ -62,27 +62,62 @@ app.get('/events/updates', function (req, res) {
 app.post('/events/new', function (req, res) {
   console.log('New Domotz WEBHOOK event received ')
   console.log(req.body)
-  let agent_id = req.body.data.agent_id
-  let device_id = req.body.data.device_id
-  console.log('Agent is ' + req.body.data.agent_id)
-  console.log('Device is ' + req.body.data.device_id)
-  console.log('Event is ' + req.body.name + ':' + (req.body.data.value || ''))
-  var data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))
-  var config = {
-    url: DOMOTZ_PUBLIC_API + `/agent/${agent_id}/device/${device_id}`,
+
+  let event = {
+    agent_id: req.body.data.agent_id,
+    device_id: req.body.data.device_id,
+    event_type: req.body.name,
+    event_value: req.body.data.value ? req.body.data.value : ''
+  }
+  let data = JSON.parse(fs.readFileSync('./data.json', 'utf8'))
+  let domotz_public_api_call_device = {
+    url:
+      DOMOTZ_PUBLIC_API + `/agent/${event.agent_id}/device/${event.device_id}`,
     method: 'get',
     headers: {
       Accept: 'application/json',
       'X-Api-Key': X_API_Key
     }
   }
-  axios(config)
+  axios(domotz_public_api_call_device)
     .then(response => {
-      // console.log(response.data)
-      data.events.push({'display_name': response.data.display_name,
-      'event': req.body.name + ':' + (req.body.data.value || '')})
-      fs.writeFileSync('data.json', JSON.stringify(data, null, 1))
-      res.status(200)
+      event.device_display_name = response.data.display_name
+
+      let domotz_public_api_call_agent = {
+        url: DOMOTZ_PUBLIC_API + `/agent/${event.agent_id}`,
+        method: 'get',
+        headers: {
+          Accept: 'application/json',
+          'X-Api-Key': X_API_Key
+        }
+      }
+
+      axios(domotz_public_api_call_agent)
+        .then(response => {
+          event.agent_display_name = response.data.display_name
+
+          data.events.push(event)
+
+          fs.writeFileSync('data.json', JSON.stringify(data, null, 1))
+          res.status(200)
+
+          var ifttt_call = {
+            url: `https://maker.ifttt.com/trigger/new_domotz_event/with/key/dkmPCLOY6qXAYqkjdTUUWt`,
+            method: 'post',
+            headers: {
+              Accept: 'application/json'
+            },
+            data: {
+              value1: event.device_display_name,
+              value2: event.agent_display_name,
+              value2: event.event_type + ' ' + (event.event_value || '')
+            }
+          }
+          axios(ifttt_call)
+            .then(response => console.log(response.data))
+            .catch(error => console.log(error))
+        })
+        .catch(error => console.log(error))
     })
     .catch(error => console.log(error))
 })
