@@ -15,7 +15,7 @@
     "body-parser": "^1.19.0",
     "core-js": "^3.4.1",
     "express": "^4.16.2",
-    "googleapis": "^26.0.1",
+    "googleapis": "^39.1.0",
     "lodash": "^4.17.15",
     "morgan": "^1.9.1",
     "rxjs": "^6.5.3"
